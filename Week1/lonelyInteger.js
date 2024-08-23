@@ -15,5 +15,6 @@ function lonelyinteger(a) {
     cont = 0;
   }
 }
+
 // Me olvidé de reiniciar el cont en cada iteración mayor.
 lonelyinteger([1, 2, 3, 4, 4, 15, 3, 2, 1]);
