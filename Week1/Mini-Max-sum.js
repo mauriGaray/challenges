@@ -14,7 +14,7 @@ function miniMaxSum(arr) {
   }
   console.log(min, max);
 }
-/* Versión mejorada 
+/* Versión mejorada¿ 
 function miniMaxSum(arr) {
   // Ordenar el array
   arr.sort((a, b) => a - b);
