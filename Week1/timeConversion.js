@@ -33,7 +33,7 @@ function timeConversion(s) {
     }
   }
 }
-/*function timeConversion(s) {
+
   let hours = Number(s.slice(0, 2));
   console.log(hours);
   
