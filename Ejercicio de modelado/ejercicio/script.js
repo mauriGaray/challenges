@@ -1,7 +1,6 @@
-// ======= Clase Army =======
+// Class Army
 class Army {
   static INITIAL_GOLD = 1000;
-
   static UNIT_STATS = {
     pikemen: {
       base: 5,
@@ -28,16 +27,17 @@ class Army {
     byzantine: { pikemen: 5, archers: 8, knights: 15 },
   };
 
-  constructor(civilization) {
+  constructor(civilization, armyName = 'no name army') {
     const civKey = civilization.toLowerCase();
     if (!Army.STARTING_UNITS[civKey]) {
-      throw new Error('Civilización desconocida');
+      throw new Error('Unknown civilization');
     }
+    this.armyName = armyName;
     this.civilization = civilization;
     this.gold = Army.INITIAL_GOLD;
     this.battleHistory = [];
     this.units = {};
-
+    // Initialize units based on civilization
     const starting = Army.STARTING_UNITS[civKey];
     for (const type in starting) {
       this.units[type] = {
@@ -51,6 +51,7 @@ class Army {
     return Object.entries(this.units).reduce((sum, [type, group]) => sum + group.count * group.strengthPerUnit, 0);
   }
 
+  // Train and transform units
   trainUnitType(type) {
     const stats = Army.UNIT_STATS[type];
     const group = this.units[type];
@@ -82,13 +83,11 @@ class Army {
       throw new Error('No hay suficiente oro para transformar');
     }
 
-    // Resta una unidad del tipo actual
     group.count -= 1;
     if (group.count === 0) {
       delete this.units[type];
     }
 
-    // Suma una del tipo nuevo
     const newType = transform.to;
     if (!this.units[newType]) {
       this.units[newType] = {
@@ -101,6 +100,7 @@ class Army {
     this.gold -= transform.cost;
   }
 
+  // Remove one of your warriors from 2 of the strongest units if you lose a battle
   loseStrongestUnits(count = 2) {
     const unitTypes = Object.keys(this.units).map((type) => {
       const { count, strengthPerUnit } = this.units[type];
@@ -124,12 +124,13 @@ class Army {
     this.gold += amount;
   }
 
-  logBattle(opponentName, result) {
-    this.battleHistory.push({ opponent: opponentName, result });
+  // Log battle history
+  logBattle(opponentName, opponentCivilization, result) {
+    this.battleHistory.push({ opponentName: opponentName, opponentCivilization: opponentCivilization, result });
   }
 }
 
-// ======= Función de Batalla =======
+// Battle function
 function battle(army1, army2) {
   const strength1 = army1.totalStrength();
   const strength2 = army2.totalStrength();
@@ -138,17 +139,57 @@ function battle(army1, army2) {
   if (strength1 > strength2) {
     army1.addGold(100);
     army2.loseStrongestUnits();
-    result = 'Army1 wins';
+    result = ` ${army1.armyName} wins`;
   } else if (strength2 > strength1) {
     army2.addGold(100);
     army1.loseStrongestUnits();
-    result = 'Army2 wins';
+    result = ` ${army2.armyName} wins`;
   } else {
     army1.loseStrongestUnits(1);
     army2.loseStrongestUnits(1);
     result = 'Draw';
   }
-  army1.logBattle(army2.civilization, result);
-  army2.logBattle(army1.civilization, result);
+  army1.logBattle(army2.armyName, army2.civilization, result);
+  army2.logBattle(army1.armyName, army1.civilization, result);
   return result;
 }
+
+// Example usage
+
+// Create armies
+const army1 = new Army('English', 'Red Lions');
+const army2 = new Army('Chinese', 'Golden Tigers');
+
+// Initial status
+console.log('Initial Armies');
+console.log('Red Lions:', army1.units);
+console.log('Golden Tigers:', army2.units);
+console.log('---');
+
+// Train units
+console.log('Training Red Lions archers...');
+army1.trainUnitType('archers');
+console.log('Red Lions archers after training:', army1.units.archers);
+console.log('---');
+
+// Transform a unit
+console.log('Transforming one Golden Tigers pikeman into archer...');
+army2.transformUnitType('pikemen');
+console.log('Golden Tigers after transformation:', army2.units);
+console.log('---');
+
+// Battle!
+console.log('Battle begins!');
+const result = battle(army1, army2);
+console.log('Battle Result:', result);
+console.log('---');
+
+// After battle status
+console.log('Armies after battle');
+console.log('Red Lions:', army1.units, 'Gold:', army1.gold);
+console.log('Golden Tigers:', army2.units, 'Gold:', army2.gold);
+console.log('---');
+
+// Battle history
+console.log('Red Lions Battle History:', army1.battleHistory);
+console.log('Golden Tigers Battle History:', army2.battleHistory);
